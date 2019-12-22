@@ -6,7 +6,7 @@ import zio.test._
 object PersistenceSpec extends DefaultRunnableSpec(
       suite("Persistence integration test")(testM("Persistense Live") {
         val ec = concurrent.ExecutionContext.global
-        configuration
+        Persistence
           .mkTransactor(configuration.DbConfig("jdbc:h2:~/test", "", ""),
                         ec,
                         ec)

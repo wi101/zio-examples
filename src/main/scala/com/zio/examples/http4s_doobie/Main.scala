@@ -23,12 +23,11 @@ object Main extends App {
   override def run(args: List[String]): ZIO[ZEnv, Nothing, Int] = {
     val program: ZIO[ZEnv, Throwable, Unit] = for {
       conf <- configuration.loadConfig.provide(Configuration.Live)
-      _ <- configuration.initDB(conf.dbConfig)
 
       blockingEnv <- ZIO.environment[Blocking]
       blockingEC <- blockingEnv.blocking.blockingExecutor.map(_.asEC)
 
-      transactorR = configuration.mkTransactor(
+      transactorR = Persistence.mkTransactor(
         conf.dbConfig,
         platform.executor.asEC,
         blockingEC

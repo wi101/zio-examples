@@ -31,8 +31,6 @@ libraryDependencies ++= Seq(
   "com.github.pureconfig" %% "pureconfig" % PureConfigVersion,
   //h2
   "com.h2database" % "h2" % H2Version,
-  //flyway
-  "org.flywaydb" %  "flyway-core" % FlywayVersion,
   // log4j
   "org.slf4j" % "slf4j-log4j12" % "1.7.26"
 )

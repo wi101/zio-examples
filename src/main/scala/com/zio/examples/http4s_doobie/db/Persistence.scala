@@ -1,9 +1,13 @@
 package com.zio.examples.http4s_doobie
 package db
 
-import doobie.{ Query0, Transactor, Update0 }
+import cats.effect.Blocker
+import com.zio.examples.http4s_doobie.configuration.DbConfig
+import doobie.h2.H2Transactor
+import doobie.{Query0, Transactor, Update0}
 import zio._
 import doobie.implicits._
+import scala.concurrent.ExecutionContext
 import zio.interop.catz._
 
 /**
@@ -65,6 +69,24 @@ object Persistence {
       def delete(id: Int): Update0 =
         sql"""DELETE FROM USERS WHERE id = $id""".update
     }
+  }
+
+  def mkTransactor(
+                    conf: DbConfig,
+                    connectEC: ExecutionContext,
+                    transactEC: ExecutionContext
+                  ): Managed[Throwable, H2Transactor[Task]] = {
+    import zio.interop.catz._
+
+    val xa = H2Transactor
+      .newH2Transactor[Task](conf.url, conf.user, conf.password, connectEC, Blocker.liftExecutionContext(transactEC))
+
+    val res = xa.allocated.map {
+      case (transactor, cleanupM) =>
+        Reservation(ZIO.succeed(transactor), _ => cleanupM.orDie)
+    }.uninterruptible
+
+    Managed(res)
   }
 
 }
