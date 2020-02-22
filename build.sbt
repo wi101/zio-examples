@@ -1,6 +1,6 @@
 name := "zio-examples"
 version := "0.1"
-scalaVersion := "2.12.6"
+scalaVersion := "2.12.10"
 
 val ScalaZVersion = "7.2.26"
 val Http4sVersion = "0.21.0-M6"
