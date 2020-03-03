@@ -4,6 +4,7 @@ import cats.effect.ExitCode
 import com.zio.examples.http4s_doobie.configuration.Configuration
 import com.zio.examples.http4s_doobie.db.Persistence
 import com.zio.examples.http4s_doobie.http.Api
+import doobie.util.transactor.Transactor
 import org.http4s.implicits._
 import org.http4s.server.Router
 import org.http4s.server.blaze.BlazeServerBuilder
@@ -24,13 +25,11 @@ object Main extends App {
     val program: ZIO[ZEnv, Throwable, Unit] = for {
       conf <- configuration.loadConfig.provide(Configuration.Live)
 
-      blockingEnv <- ZIO.environment[Blocking]
-      blockingEC <- blockingEnv.blocking.blockingExecutor.map(_.asEC)
 
       transactorR = Persistence.mkTransactor(
         conf.dbConfig,
         platform.executor.asEC,
-        blockingEC
+        platform.executor.asEC
       )
 
       httpApp = Router[AppTask](
@@ -46,12 +45,7 @@ object Main extends App {
           .drain
       }
       program <- transactorR.use { transactor =>
-        server.provideSome[ZEnv] { _ =>
-          new Clock.Live with Blocking.Live
-          with Persistence.Live {
-            override protected def tnx: doobie.Transactor[Task] = transactor
-          }
-        }
+        server.provideLayer(Clock.live ++ Persistence.Live(transactor) ++ Blocking.live)
       }
     } yield program
 
