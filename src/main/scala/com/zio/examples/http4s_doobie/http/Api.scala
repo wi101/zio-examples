@@ -10,7 +10,7 @@ import org.http4s.circe._
 import zio.interop.catz._
 import io.circe.generic.auto._
 
-final case class Api[R <: Persistence](rootUri: String) {
+final case class Api[R <: UserPersistence](rootUri: String) {
 
   type UserTask[A] = RIO[R, A]
 
@@ -23,10 +23,10 @@ final case class Api[R <: Persistence](rootUri: String) {
   def route: HttpRoutes[UserTask] = {
 
     HttpRoutes.of[UserTask] {
-      case GET -> Root / IntVar(id) => Ok(get(id))
+      case GET -> Root / IntVar(id) => Ok(UserPersistenceService.get(id))
       case request @ POST -> Root =>
         request.decode[User] { user =>
-          Created(create(user))
+          Created(UserPersistenceService.create(user))
         }
     }
   }
