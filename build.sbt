@@ -5,7 +5,7 @@ scalaVersion := "2.12.10"
 val Http4sVersion = "0.21.1"
 val CirceVersion = "0.13.0"
 val DoobieVersion = "0.8.8"
-val ZIOVersion = "1.0.0-RC18"
+val ZIOVersion = "1.0.0-RC18-2"
 val PureConfigVersion = "0.11.0"
 val H2Version = "1.4.199"
 val FlywayVersion = "6.0.0-beta2"
@@ -13,7 +13,7 @@ val FlywayVersion = "6.0.0-beta2"
 libraryDependencies ++= Seq(
   // ZIO
   "dev.zio" %% "zio" % ZIOVersion,
-  "dev.zio" %% "zio-interop-cats" % "2.0.0.0-RC11",
+  "dev.zio" %% "zio-interop-cats" % "2.0.0.0-RC12",
   "dev.zio" %% "zio-test" % ZIOVersion % "test",
   "dev.zio" %% "zio-test-sbt" % ZIOVersion % "test",
   // Http4s

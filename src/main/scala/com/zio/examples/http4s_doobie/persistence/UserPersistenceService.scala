@@ -1,20 +1,20 @@
 package com.zio.examples.http4s_doobie
-package db
+package persistence
 
 import cats.effect.Blocker
-import com.zio.examples.http4s_doobie.configuration.DbConfig
+import com.zio.examples.http4s_doobie.configuration.{Configuration, DbConfig}
 import doobie.h2.H2Transactor
 import doobie.implicits._
 import doobie.{Query0, Transactor, Update0}
 import scala.concurrent.ExecutionContext
 import zio._
+import zio.blocking.Blocking
 import zio.interop.catz._
 
 /**
-  * Persistence Service
+  * Persistence Module for production using Doobie
   */
-final class UserPersistenceService(tnx: Transactor[Task])
-    extends Service[User] {
+final class UserPersistenceService(tnx: Transactor[Task]) extends Persistence.Service[User] {
   import UserPersistenceService._
 
   def get(id: Int): Task[User] =
@@ -44,9 +44,6 @@ final class UserPersistenceService(tnx: Transactor[Task])
 
 object UserPersistenceService {
 
-  /**
-    * Persistence Module for production using Doobie
-    */
   object SQL {
 
     def get(id: Int): Query0[User] =
@@ -78,17 +75,18 @@ object UserPersistenceService {
         Reservation(ZIO.succeed(transactor), _ => cleanupM.orDie)
     }.uninterruptible
 
-    Managed(res).map(new UserPersistenceService(_)).orDie
+    Managed(res)
+      .map(new UserPersistenceService(_))
+      .orDie
   }
 
-  def layer(conf: DbConfig,
-            connectEC: ExecutionContext,
-            transactEC: ExecutionContext
-  ): ZLayer[Any, Nothing, UserPersistence] =
-    ZLayer.fromManaged(mkTransactor(conf, connectEC, transactEC))
-
-  def get(id: Int): RIO[UserPersistence, User] = RIO.accessM(_.get.get(id))
-  def create(user: User): RIO[UserPersistence, User] = RIO.accessM(_.get.create(user))
-  def delete(id: Int): RIO[UserPersistence, Boolean] = RIO.accessM(_.get.delete(id))
+  def live(connectEC: ExecutionContext): ZLayer[Has[DbConfig] with Blocking, Throwable, UserPersistence] =
+    ZLayer.fromManaged (
+      for {
+        config <- configuration.dbConfig.toManaged_
+        blockingEC <- blocking.blocking { ZIO.descriptor.map(_.executor.asEC) }.toManaged_
+        managed <- mkTransactor(config, connectEC, blockingEC)
+      } yield managed
+    )
 
 }

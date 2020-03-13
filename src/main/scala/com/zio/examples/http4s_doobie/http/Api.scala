@@ -1,7 +1,7 @@
 package com.zio.examples.http4s_doobie
 package http
 
-import db._
+import persistence._
 import io.circe.{Decoder, Encoder}
 import org.http4s.{EntityDecoder, EntityEncoder, HttpRoutes}
 import org.http4s.dsl.Http4sDsl
@@ -23,11 +23,13 @@ final case class Api[R <: UserPersistence](rootUri: String) {
   def route: HttpRoutes[UserTask] = {
 
     HttpRoutes.of[UserTask] {
-      case GET -> Root / IntVar(id) => Ok(UserPersistenceService.get(id))
+      case GET -> Root / IntVar(id) => Ok(getUser(id))
       case request @ POST -> Root =>
         request.decode[User] { user =>
-          Created(UserPersistenceService.create(user))
+          Created(createUser(user))
         }
+      case DELETE -> Root / IntVar(id) =>
+        (getUser(id) *> deleteUser(id)).foldM(_ => NotFound(), Ok(_))
     }
   }
 
