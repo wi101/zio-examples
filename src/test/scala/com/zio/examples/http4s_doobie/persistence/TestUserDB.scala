@@ -16,6 +16,6 @@ case class TestUserDB(users: Ref[Vector[User]]) extends Persistence.Service[User
 
 object TestUserDB {
   val layer: ZLayer[Any, Nothing, UserPersistence] =
-    ZLayer.fromFunctionM(_ => Ref.make(Vector.empty[User]).map(TestUserDB(_)))
+    ZLayer.fromEffect(Ref.make(Vector.empty[User]).map(TestUserDB(_)))
 
 }
