@@ -6,7 +6,7 @@ package object configuration {
 
   type Configuration = Has[ApiConfig] with Has[DbConfig]
 
-  case class Config(api: ApiConfig, dbConfig: DbConfig)
+  case class AppConfig(api: ApiConfig, dbConfig: DbConfig)
   case class ApiConfig(endpoint: String, port: Int)
   case class DbConfig(
       url: String,

@@ -6,6 +6,6 @@ import pureconfig.generic.auto._
 object ConfigPrd {
   val live: Layer[Throwable, Configuration] = ZLayer.fromEffectMany(
     Task
-      .effect(loadConfigOrThrow[Config])
+      .effect(loadConfigOrThrow[AppConfig])
       .map(c => Has(c.api) ++ Has(c.dbConfig)))
 }
