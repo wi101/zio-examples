@@ -6,7 +6,7 @@ import zio.duration._
 object Main extends zio.App {
 
   def parseInt(s: String): Task[Int] = Task(s.toInt)
-  def run(args: List[String]): ZIO[zio.ZEnv, Nothing, Int] = {
+  def run(args: List[String]): ZIO[ZEnv, Nothing, Int] = {
 
     val io = for {
       _ <- console.putStrLn("Hello, how many chocolate would you like to eat?!")
@@ -37,7 +37,7 @@ case class Chocolate private (max: Int, state: Ref[Int]) {
          console.putStrLn("No chocolate for you :( it was your choice.. well good decision :-D") *>
            ZIO.fail("no chocolate!"))
       else if (oldState < max)
-        (oldState + 1, console.putStrLn("Eating.... " + (oldState + 1)))
+        (oldState + 1, console.putStrLn("Eating \uD83C\uDF6B.... " + (oldState + 1)))
       else
         (oldState,
          console.putStrLn("oh you ate all the chocolate!") *> ZIO.fail(
