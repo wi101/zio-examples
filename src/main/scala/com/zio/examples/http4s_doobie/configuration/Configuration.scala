@@ -3,15 +3,15 @@ import zio.{Task, RIO}
 import pureconfig.loadConfigOrThrow
 
 trait Configuration extends Serializable {
-  val config: Configuration.Service[Any]
+  val config: Configuration.Service
 }
 object Configuration {
-  trait Service[R] {
-    val load: RIO[R, Config]
+  trait Service {
+    val load: Task[Config]
   }
 
   trait Live extends Configuration {
-    val config: Service[Any] = new Service[Any] {
+    val config: Service = new Service {
       import pureconfig.generic.auto._
 
       val load: Task[Config] = Task.effect(loadConfigOrThrow[Config])
@@ -21,7 +21,7 @@ object Configuration {
   object Live extends Live
 
   trait Test extends Configuration {
-    val config: Service[Any] = new Service[Any] {
+    val config: Service = new Service {
       val load: Task[Config] = Task.effectTotal(
         Config(ApiConfig("loacalhost", 8080), DbConfig("localhost", "", "")))
     }
