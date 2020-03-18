@@ -1,52 +1,59 @@
 package com.zio.examples.http4s_doobie
 
 import cats.effect.ExitCode
-import com.zio.examples.http4s_doobie.configuration.{
-  ApiConfig,
-  ConfigPrd,
-  Configuration
-}
-import com.zio.examples.http4s_doobie.persistence.{
-  UserPersistence,
-  UserPersistenceService
-}
+import com.zio.examples.http4s_doobie.configuration.Configuration
+import com.zio.examples.http4s_doobie.db.Persistence
 import com.zio.examples.http4s_doobie.http.Api
 import org.http4s.implicits._
 import org.http4s.server.Router
 import org.http4s.server.blaze.BlazeServerBuilder
 import org.http4s.server.middleware.CORS
-import zio._
 import zio.blocking.Blocking
 import zio.clock.Clock
 import zio.console.putStrLn
 import zio.interop.catz._
+import zio._
 
 object Main extends App {
 
-  type AppEnvironment = Clock with Blocking with UserPersistence
+  type AppEnvironment = Clock with Blocking with Persistence
 
   type AppTask[A] = RIO[AppEnvironment, A]
 
-  val userPersistence = (ConfigPrd.live ++ Blocking.live) >>> UserPersistenceService
-    .live(platform.executor.asEC)
-
   override def run(args: List[String]): ZIO[ZEnv, Nothing, Int] = {
-    val program: ZIO[ZEnv, Throwable, Unit] =
-      (for {
-        api <- configuration.apiConfig
-        httpApp = Router[AppTask](
-          "/users" -> Api(s"${api.endpoint}/users").route
-        ).orNotFound
+    val program: ZIO[ZEnv, Throwable, Unit] = for {
+      conf <- configuration.loadConfig.provide(Configuration.Live)
 
-        server <- ZIO.runtime[AppEnvironment].flatMap { implicit rts =>
-          BlazeServerBuilder[AppTask]
-            .bindHttp(api.port, "0.0.0.0")
-            .withHttpApp(CORS(httpApp))
-            .serve
-            .compile[AppTask, AppTask, ExitCode]
-            .drain
+      blockingEnv <- ZIO.environment[Blocking]
+      blockingEC <- blockingEnv.blocking.blockingExecutor.map(_.asEC)
+
+      transactorR = Persistence.mkTransactor(
+        conf.dbConfig,
+        platform.executor.asEC,
+        blockingEC
+      )
+
+      httpApp = Router[AppTask](
+        "/users" -> Api(s"${conf.api.endpoint}/users").route
+      ).orNotFound
+
+      server = ZIO.runtime[AppEnvironment].flatMap { implicit rts =>
+        BlazeServerBuilder[AppTask]
+          .bindHttp(conf.api.port, "0.0.0.0")
+          .withHttpApp(CORS(httpApp))
+          .serve
+          .compile[AppTask, AppTask, ExitCode]
+          .drain
+      }
+      program <- transactorR.use { transactor =>
+        server.provideSome[ZEnv] { _ =>
+          new Clock.Live with Blocking.Live
+          with Persistence.Live {
+            override protected def tnx: doobie.Transactor[Task] = transactor
+          }
         }
-      } yield server).provideSomeLayer[ZEnv](ConfigPrd.live ++ userPersistence)
+      }
+    } yield program
 
     program.foldM(
       err => putStrLn(s"Execution failed with: $err") *> IO.succeed(1),

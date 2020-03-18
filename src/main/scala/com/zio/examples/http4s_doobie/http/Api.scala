@@ -1,7 +1,7 @@
 package com.zio.examples.http4s_doobie
 package http
 
-import persistence._
+import db._
 import io.circe.{Decoder, Encoder}
 import org.http4s.{EntityDecoder, EntityEncoder, HttpRoutes}
 import org.http4s.dsl.Http4sDsl
@@ -10,7 +10,7 @@ import org.http4s.circe._
 import zio.interop.catz._
 import io.circe.generic.auto._
 
-final case class Api[R <: UserPersistence](rootUri: String) {
+final case class Api[R <: Persistence](rootUri: String) {
 
   type UserTask[A] = RIO[R, A]
 
@@ -23,13 +23,11 @@ final case class Api[R <: UserPersistence](rootUri: String) {
   def route: HttpRoutes[UserTask] = {
 
     HttpRoutes.of[UserTask] {
-      case GET -> Root / IntVar(id) => Ok(getUser(id))
+      case GET -> Root / IntVar(id) => Ok(get(id))
       case request @ POST -> Root =>
         request.decode[User] { user =>
-          Created(createUser(user))
+          Created(create(user))
         }
-      case DELETE -> Root / IntVar(id) =>
-        (getUser(id) *> deleteUser(id)).foldM(_ => NotFound(), Ok(_))
     }
   }
 
