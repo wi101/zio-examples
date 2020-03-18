@@ -1,9 +1,10 @@
 package com.zio.examples.http4s_doobie
 
-import zio.RIO
+import zio.{Has, RIO}
 
 package object configuration {
 
+  type Configuration = Has[Configuration.Service]
   case class Config(api: ApiConfig, dbConfig: DbConfig)
   case class ApiConfig(endpoint: String, port: Int)
   case class DbConfig(
@@ -12,5 +13,5 @@ package object configuration {
       password: String
   )
 
-  def loadConfig: RIO[Configuration, Config] = RIO.accessM(_.config.load)
+  def loadConfig: RIO[Configuration, Config] = RIO.accessM(_.get.load)
 }

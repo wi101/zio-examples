@@ -22,10 +22,9 @@ object Main extends App {
 
   override def run(args: List[String]): ZIO[ZEnv, Nothing, Int] = {
     val program: ZIO[ZEnv, Throwable, Unit] = for {
-      conf <- configuration.loadConfig.provide(Configuration.Live)
+      conf <- configuration.loadConfig.provideLayer(Configuration.live)
 
-      blockingEnv <- ZIO.environment[Blocking]
-      blockingEC <- blockingEnv.blocking.blockingExecutor.map(_.asEC)
+      blockingEC <- blocking.blocking { ZIO.descriptor.map(_.executor.asEC) }
 
       transactorR = Persistence.mkTransactor(
         conf.dbConfig,
@@ -46,12 +45,7 @@ object Main extends App {
           .drain
       }
       program <- transactorR.use { transactor =>
-        server.provideSome[ZEnv] { _ =>
-          new Clock.Live with Blocking.Live
-          with Persistence.Live {
-            override protected def tnx: doobie.Transactor[Task] = transactor
-          }
-        }
+        server.provideSomeLayer[ZEnv](Persistence.live(transactor))
       }
     } yield program
 

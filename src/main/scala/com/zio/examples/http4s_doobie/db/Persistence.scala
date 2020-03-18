@@ -13,10 +13,6 @@ import zio.interop.catz._
 /**
  * Persistence Service
  */
-trait Persistence extends Serializable {
-  val userPersistence: Persistence.Service[Any]
-}
-
 object Persistence {
   trait Service[R] {
     def get(id: Int): RIO[R, User]
@@ -27,11 +23,9 @@ object Persistence {
   /**
    * Persistence Module for production using Doobie
    */
-  trait Live extends Persistence {
+  case class Live(transactor: Transactor[Task]) extends Persistence.Service[Any] {
 
-    protected def tnx: Transactor[Task]
-
-    val userPersistence: Service[Any] = new Service[Any] {
+    protected def tnx: Transactor[Task] = transactor
 
       def get(id: Int): Task[User] =
         SQL
@@ -68,7 +62,6 @@ object Persistence {
 
       def delete(id: Int): Update0 =
         sql"""DELETE FROM USERS WHERE id = $id""".update
-    }
   }
 
   def mkTransactor(
@@ -89,4 +82,7 @@ object Persistence {
     Managed(res)
   }
 
+  def live(transactor: Transactor[Task]): Layer[Nothing, Persistence] = ZLayer.succeed(Persistence.Live(transactor))
+
+  def test(transactor: Transactor[Task]): Layer[Nothing, Persistence] = ZLayer.succeed(Persistence.Live(transactor))
 }
