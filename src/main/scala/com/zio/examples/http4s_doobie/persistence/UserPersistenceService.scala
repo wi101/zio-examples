@@ -2,7 +2,7 @@ package com.zio.examples.http4s_doobie
 package persistence
 
 import cats.effect.Blocker
-import com.zio.examples.http4s_doobie.configuration.{Configuration, DbConfig}
+import com.zio.examples.http4s_doobie.configuration.DbConfig
 import doobie.h2.H2Transactor
 import doobie.implicits._
 import doobie.{Query0, Transactor, Update0}
@@ -60,7 +60,7 @@ object UserPersistenceService {
       conf: DbConfig,
       connectEC: ExecutionContext,
       transactEC: ExecutionContext
-  ) = {
+  ): Managed[Throwable, UserPersistenceService] = {
     import zio.interop.catz._
 
     val xa = H2Transactor
@@ -77,13 +77,12 @@ object UserPersistenceService {
 
     Managed(res)
       .map(new UserPersistenceService(_))
-      .orDie
   }
 
   def live(connectEC: ExecutionContext): ZLayer[Has[DbConfig] with Blocking, Throwable, UserPersistence] =
     ZLayer.fromManaged (
       for {
-        config <- configuration.dbConfig.toManaged_
+        config <- configuration.dbConfig.orDie.toManaged_
         blockingEC <- blocking.blocking { ZIO.descriptor.map(_.executor.asEC) }.toManaged_
         managed <- mkTransactor(config, connectEC, blockingEC)
       } yield managed

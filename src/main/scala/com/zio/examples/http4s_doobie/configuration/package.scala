@@ -1,6 +1,7 @@
 package com.zio.examples.http4s_doobie
 
-import zio.{Has, ZIO}
+import pureconfig.loadConfigOrThrow
+import zio._
 
 package object configuration {
 
@@ -16,4 +17,12 @@ package object configuration {
 
   val apiConfig: ZIO[Has[ApiConfig], Throwable, ApiConfig] = ZIO.access(_.get)
   val dbConfig: ZIO[Has[DbConfig], Throwable, DbConfig] = ZIO.access(_.get)
+
+  object Configuration {
+    import pureconfig.generic.auto._
+    val live: Layer[Throwable, Configuration] = ZLayer.fromEffectMany(
+      Task
+        .effect(loadConfigOrThrow[AppConfig])
+        .map(c => Has(c.api) ++ Has(c.dbConfig)))
+  }
 }

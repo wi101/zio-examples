@@ -2,9 +2,7 @@ package com.zio.examples.http4s_doobie.persistence
 import com.zio.examples.http4s_doobie.{User, UserNotFound}
 import zio.{Ref, Task, ZLayer}
 
-case class TestUserDB(users: Ref[Vector[User]]) extends Persistence.Service[User] {
-  val createTable: Task[Unit] =
-    Ref.make(Vector.empty[User]).unit
+case class Test(users: Ref[Vector[User]]) extends Persistence.Service[User] {
   def get(id: Int): Task[User] =
     users.get.flatMap(users =>
       Task.require(UserNotFound(id))(Task.succeed(users.find(_.id == id))))
@@ -14,8 +12,8 @@ case class TestUserDB(users: Ref[Vector[User]]) extends Persistence.Service[User
     users.modify(users => true -> users.filterNot(_.id == id))
 }
 
-object TestUserDB {
+object Test {
   val layer: ZLayer[Any, Nothing, UserPersistence] =
-    ZLayer.fromEffect(Ref.make(Vector.empty[User]).map(TestUserDB(_)))
+    ZLayer.fromEffect(Ref.make(Vector.empty[User]).map(Test(_)))
 
 }

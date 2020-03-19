@@ -23,7 +23,7 @@ final case class Api[R <: UserPersistence](rootUri: String) {
   def route: HttpRoutes[UserTask] = {
 
     HttpRoutes.of[UserTask] {
-      case GET -> Root / IntVar(id) => Ok(getUser(id))
+      case GET -> Root / IntVar(id) => getUser(id).foldM(_ => NotFound(), Ok(_))
       case request @ POST -> Root =>
         request.decode[User] { user =>
           Created(createUser(user))

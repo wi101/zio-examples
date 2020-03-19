@@ -27,5 +27,5 @@ object UserPersistenceTest extends DefaultRunnableSpec {
           assert(deleted)(isRight(isTrue)) &&
             assert(notFound)(isLeft(anything))
       }
-    ).provideSomeLayer[TestEnvironment](TestUserDB.layer)
+    ).provideSomeLayer[TestEnvironment](Test.layer)
 }
