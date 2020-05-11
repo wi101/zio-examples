@@ -13,7 +13,7 @@ val FlywayVersion = "6.0.0-beta2"
 libraryDependencies ++= Seq(
   // ZIO
   "dev.zio" %% "zio" % ZIOVersion,
-  "dev.zio" %% "zio-interop-cats" % "2.0.0.0-RC12",
+  "dev.zio" %% "zio-interop-cats" % "2.0.0.0-RC13",
   "dev.zio" %% "zio-test" % ZIOVersion % "test",
   "dev.zio" %% "zio-test-sbt" % ZIOVersion % "test",
   // Http4s
