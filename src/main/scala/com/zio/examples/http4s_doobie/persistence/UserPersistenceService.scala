@@ -63,19 +63,13 @@ object UserPersistenceService {
   ): Managed[Throwable, UserPersistenceService] = {
     import zio.interop.catz._
 
-    val xa = H2Transactor
+    H2Transactor
       .newH2Transactor[Task](conf.url,
-                             conf.user,
-                             conf.password,
-                             connectEC,
-                             Blocker.liftExecutionContext(transactEC))
-
-    val res = xa.allocated.map {
-      case (transactor, cleanupM) =>
-        Reservation(ZIO.succeed(transactor), _ => cleanupM.orDie)
-    }.uninterruptible
-
-    Managed(res)
+        conf.user,
+        conf.password,
+        connectEC,
+        Blocker.liftExecutionContext(transactEC))
+      .toManagedZIO
       .map(new UserPersistenceService(_))
   }
 
