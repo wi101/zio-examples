@@ -15,8 +15,8 @@ package object configuration {
       password: String
   )
 
-  val apiConfig: ZIO[Has[ApiConfig], Throwable, ApiConfig] = ZIO.access(_.get)
-  val dbConfig: ZIO[Has[DbConfig], Throwable, DbConfig] = ZIO.access(_.get)
+  val apiConfig: URIO[Has[ApiConfig], ApiConfig] = ZIO.access(_.get)
+  val dbConfig:  URIO[Has[DbConfig],  DbConfig]  = ZIO.access(_.get)
 
   object Configuration {
     import pureconfig.generic.auto._
