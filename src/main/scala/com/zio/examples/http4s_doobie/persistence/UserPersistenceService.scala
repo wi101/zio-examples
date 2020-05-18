@@ -73,10 +73,11 @@ object UserPersistenceService {
       .map(new UserPersistenceService(_))
   }
 
-  def live(connectEC: ExecutionContext): ZLayer[Has[DbConfig] with Blocking, Throwable, UserPersistence] =
+  def live: ZLayer[Has[DbConfig] with Blocking, Throwable, UserPersistence] =
     ZLayer.fromManaged (
       for {
         config <- configuration.dbConfig.toManaged_
+        connectEC  <- ZIO.descriptor.map(_.executor.asEC).toManaged_
         blockingEC <- blocking.blocking { ZIO.descriptor.map(_.executor.asEC) }.toManaged_
         managed <- mkTransactor(config, connectEC, blockingEC)
       } yield managed
