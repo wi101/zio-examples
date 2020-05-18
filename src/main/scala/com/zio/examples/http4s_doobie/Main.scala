@@ -1,10 +1,7 @@
 package com.zio.examples.http4s_doobie
 
 import cats.effect.ExitCode
-import com.zio.examples.http4s_doobie.configuration.{
-  ApiConfig,
-  Configuration
-}
+import com.zio.examples.http4s_doobie.configuration.{ApiConfig, Configuration}
 import com.zio.examples.http4s_doobie.persistence.{
   UserPersistence,
   UserPersistenceService
@@ -26,12 +23,11 @@ object Main extends App {
 
   type AppTask[A] = RIO[AppEnvironment, A]
 
-  val userPersistence = (Configuration.live ++ Blocking.live) >>> UserPersistenceService
-    .live
+  val userPersistence = (Configuration.live ++ Blocking.live) >>> UserPersistenceService.live
 
   override def run(args: List[String]): ZIO[ZEnv, Nothing, Int] = {
     val program: ZIO[AppEnvironment, Throwable, Unit] =
-     for {
+      for {
         api <- configuration.apiConfig
         httpApp = Router[AppTask](
           "/users" -> Api(s"${api.endpoint}/users").route
@@ -47,9 +43,9 @@ object Main extends App {
         }
       } yield server
 
-    program.provideSomeLayer[ZEnv](Configuration.live ++ userPersistence)foldM(
-      err => putStrLn(s"Execution failed with: $err") *> IO.succeed(1),
-      _ => IO.succeed(0)
-    )
+    program
+      .provideSomeLayer[ZEnv](Configuration.live ++ userPersistence)
+      .tapError(err => putStrLn(s"Execution failed with: $err"))
+      .fold(_ => 1, _ => 0)
   }
 }
