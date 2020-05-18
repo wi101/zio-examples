@@ -14,7 +14,8 @@ import zio.interop.catz._
 /**
   * Persistence Module for production using Doobie
   */
-final class UserPersistenceService(tnx: Transactor[Task]) extends Persistence.Service[User] {
+final class UserPersistenceService(tnx: Transactor[Task])
+    extends Persistence.Service[User] {
   import UserPersistenceService._
 
   def get(id: Int): Task[User] =
@@ -57,30 +58,30 @@ object UserPersistenceService {
   }
 
   def mkTransactor(
-      conf: DbConfig,
-      connectEC: ExecutionContext,
-      transactEC: ExecutionContext
+    conf: DbConfig,
+    connectEC: ExecutionContext,
+    transactEC: ExecutionContext
   ): Managed[Throwable, UserPersistenceService] = {
     import zio.interop.catz._
 
     H2Transactor
-      .newH2Transactor[Task](conf.url,
+      .newH2Transactor[Task](
+        conf.url,
         conf.user,
         conf.password,
         connectEC,
-        Blocker.liftExecutionContext(transactEC))
+        Blocker.liftExecutionContext(transactEC)
+      )
       .toManagedZIO
       .map(new UserPersistenceService(_))
   }
 
-  def live: ZLayer[Has[DbConfig] with Blocking, Throwable, UserPersistence] =
-    ZLayer.fromManaged (
-      for {
-        config <- configuration.dbConfig.toManaged_
-        connectEC  <- ZIO.descriptor.map(_.executor.asEC).toManaged_
-        blockingEC <- blocking.blocking { ZIO.descriptor.map(_.executor.asEC) }.toManaged_
-        managed <- mkTransactor(config, connectEC, blockingEC)
-      } yield managed
-    )
+  val live: ZLayer[Has[DbConfig] with Blocking, Throwable, UserPersistence] =
+    ZLayer.fromManaged(for {
+      config <- configuration.dbConfig.toManaged_
+      connectEC <- ZIO.descriptor.map(_.executor.asEC).toManaged_
+      blockingEC <- blocking.blocking { ZIO.descriptor.map(_.executor.asEC) }.toManaged_
+      managed <- mkTransactor(config, connectEC, blockingEC)
+    } yield managed)
 
 }
