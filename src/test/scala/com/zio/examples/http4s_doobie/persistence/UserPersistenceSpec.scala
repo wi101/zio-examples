@@ -8,8 +8,6 @@ import zio.test.environment.TestEnvironment
 import zio.{Cause, ZLayer}
 
 object UserPersistenceSpec extends DefaultRunnableSpec {
-  val ec = concurrent.ExecutionContext.global
-
   val dbConfig = ZLayer.succeed(DbConfig("jdbc:h2:~/test", "", ""))
 
   def spec =
@@ -24,7 +22,7 @@ object UserPersistenceSpec extends DefaultRunnableSpec {
           assert(deleted)(isRight(isTrue))
     }).provideSomeLayer[TestEnvironment](
       (dbConfig ++ Blocking.live) >>> UserPersistenceService
-        .live(ec)
+        .live
         .mapError(_ => TestFailure.Runtime(Cause.die(new Exception("die")))))
 
 }

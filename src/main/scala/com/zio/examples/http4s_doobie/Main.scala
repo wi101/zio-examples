@@ -27,7 +27,7 @@ object Main extends App {
   type AppTask[A] = RIO[AppEnvironment, A]
 
   val userPersistence = (Configuration.live ++ Blocking.live) >>> UserPersistenceService
-    .live(platform.executor.asEC)
+    .live
 
   override def run(args: List[String]): ZIO[ZEnv, Nothing, Int] = {
     val program: ZIO[AppEnvironment, Throwable, Unit] =
