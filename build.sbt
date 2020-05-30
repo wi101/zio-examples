@@ -5,7 +5,7 @@ scalaVersion := "2.12.10"
 val Http4sVersion = "0.21.4"
 val CirceVersion = "0.13.0"
 val DoobieVersion = "0.9.0"
-val ZIOVersion = "1.0.0-RC19"
+val ZIOVersion = "1.0.0-RC20"
 val PureConfigVersion = "0.12.3"
 
 libraryDependencies ++= Seq(
