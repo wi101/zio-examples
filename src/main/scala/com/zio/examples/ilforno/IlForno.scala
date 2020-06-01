@@ -67,9 +67,8 @@ object ilforno {
             }
             availableIngr.fold[IO[UnavailableIngredient, Map[Ingredient, Int]]](
               IO.fail(UnavailableIngredient(ingr))
-            ) { availableCount =>
-              res *> IO.succeed(ingredients.updated(ingr, availableCount))
-            }
+            )(availableCount => res.map(_.updated(ingr, availableCount)))
+
         }
 
     def handleRequests[R](
