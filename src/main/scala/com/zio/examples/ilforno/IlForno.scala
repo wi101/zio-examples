@@ -52,6 +52,30 @@ object ilforno {
 
     def sendRequest(request: Request): UIO[Unit] = requests.offer(request).unit
 
+    def handleRequests[R](
+      fallbackAction: (UnavailableIngredient, String) => URIO[R, Unit]
+    ): URIO[R with Clock, Unit] =
+      (for {
+        request <- requests.take
+        oldState <- currentIngredients.get
+        newState <- System
+          .preparePizza(request, oldState)
+          .catchAll(e => fallbackAction(e, request.name).as(oldState))
+        _ <- currentIngredients.set(newState)
+      } yield ())
+        .repeat(Schedule.spaced(15.seconds) && Schedule.duration(8.hours))
+        .unit
+
+  }
+
+  object System {
+
+    def start(initialIngredients: Map[Ingredient, Int]) =
+      for {
+        requests <- Queue.bounded[Request](12)
+        ingredients <- Ref.make(initialIngredients)
+      } yield new System(requests, ingredients)
+
     def preparePizza(
       request: Request,
       ingredients: Map[Ingredient, Int]
@@ -70,29 +94,6 @@ object ilforno {
             )(availableCount => res.map(_.updated(ingr, availableCount)))
 
         }
-
-    def handleRequests[R](
-      fallbackAction: (UnavailableIngredient, String) => URIO[R, Unit]
-    ): URIO[R with Clock, Unit] =
-      (for {
-        request <- requests.take
-        oldState <- currentIngredients.get
-        newState <- preparePizza(request, oldState)
-          .catchAll(e => fallbackAction(e, request.name).as(oldState))
-        _ <- currentIngredients.set(newState)
-      } yield ())
-        .repeat(Schedule.spaced(15.seconds) && Schedule.duration(8.hours))
-        .unit
-
-  }
-
-  object System {
-
-    def start(initialIngredients: Map[Ingredient, Int]) =
-      for {
-        requests <- Queue.bounded[Request](12)
-        ingredients <- Ref.make(initialIngredients)
-      } yield new System(requests, ingredients)
 
   }
 
