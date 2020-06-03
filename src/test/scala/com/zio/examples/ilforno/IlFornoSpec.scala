@@ -1,7 +1,6 @@
 package com.zio.examples.ilforno
 
-import com.zio.examples.ilforno.ilforno.Ingredient.{Cheese, Tomato, Tuna}
-import com.zio.examples.ilforno.ilforno._
+import com.zio.examples.ilforno.Ingredient.{Cheese, Tomato, Tuna}
 import zio.test.Assertion._
 import zio.test._
 
