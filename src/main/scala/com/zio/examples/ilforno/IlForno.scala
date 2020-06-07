@@ -1,10 +1,12 @@
 package com.zio.examples.ilforno
 
+import com.zio.examples.ilforno.fridge._
 import zio.clock.Clock
 import zio.duration._
 import zio._
+import zio.console.Console
 
-sealed trait Ingredient
+sealed trait Ingredient extends Serializable with Product
 object Ingredient {
   final case object Tuna extends Ingredient
   final case object Tomato extends Ingredient
@@ -38,27 +40,27 @@ object PizzaType {
   }
 }
 
-final case class UnavailableIngredient(ingredient: Ingredient) {
-  override def toString: String = s"Not enough: $ingredient"
-}
-
 case class Request(name: String, pizza: PizzaType)
 
-final class System(requests: Queue[Request],
-                   currentIngredients: Ref[Map[Ingredient, Int]]) {
+class System(requests: Queue[Request]) {
 
   def sendRequest(request: Request): UIO[Unit] = requests.offer(request).unit
 
   def handleRequests[R](
-    fallbackAction: (UnavailableIngredient, String) => URIO[R, Unit]
-  ): URIO[R with Clock, Unit] =
+    fallbackAction: (Error, String) => URIO[R, Unit]
+  ): URIO[R with Clock with Fridge with Console, Unit] =
     (for {
       request <- requests.take
-      oldState <- currentIngredients.get
-      newState <- System
-        .preparePizza(request, oldState)
-        .catchAll(e => fallbackAction(e, request.name).as(oldState))
-      _ <- currentIngredients.set(newState)
+      fridge <- ZIO.service[fridge.Service]
+      resource = ZManaged.make(fridge.open)(_ => fridge.close)
+      _ <- resource
+        .use { oldState =>
+          System
+            .preparePizza(request, oldState)
+            .flatMap(newState => fridge.set(newState))
+        }
+        .catchAll(e => fallbackAction(e, request.name))
+        .ensuring(fridge.close)
     } yield ())
       .repeat(Schedule.spaced(15.seconds) && Schedule.duration(8.hours))
       .unit
@@ -67,29 +69,23 @@ final class System(requests: Queue[Request],
 
 object System {
 
-  def start(initialIngredients: Map[Ingredient, Int]) =
-    for {
-      requests <- Queue.bounded[Request](12)
-      ingredients <- Ref.make(initialIngredients)
-    } yield new System(requests, ingredients)
+  def start =
+    Queue.bounded[Request](12).map(new System(_))
 
   def preparePizza(
     request: Request,
     ingredients: Map[Ingredient, Int]
-  ): IO[UnavailableIngredient, Map[Ingredient, Int]] =
+  ): IO[Error, Map[Ingredient, Int]] =
     request.pizza.ingredients
-      .foldLeft[IO[UnavailableIngredient, Map[Ingredient, Int]]](
-        UIO(ingredients)
-      ) {
+      .foldLeft[IO[Error, Map[Ingredient, Int]]](UIO(ingredients)) {
         case (res, (ingr, count)) =>
           val availableIngr = ingredients.get(ingr).flatMap { c =>
             if ((c - count) >= 0) Some(c - count)
             else None
           }
-          availableIngr.fold[IO[UnavailableIngredient, Map[Ingredient, Int]]](
-            IO.fail(UnavailableIngredient(ingr))
+          availableIngr.fold[IO[Error, Map[Ingredient, Int]]](
+            IO.fail(Error.UnavailableIngredient(ingr))
           )(availableCount => res.map(_.updated(ingr, availableCount)))
-
       }
 
 }
