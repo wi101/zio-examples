@@ -48,7 +48,7 @@ class System(requests: Queue[Request]) {
 
   def handleRequests[R](
     fallbackAction: (Error, String) => URIO[R, Unit]
-  ): URIO[R with Clock with Fridge with Console, Unit] =
+  ): URIO[R with Clock with Fridge, Unit] =
     (for {
       request <- requests.take
       fridge <- ZIO.service[fridge.Service]

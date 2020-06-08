@@ -53,7 +53,7 @@ object IlFornoSpec extends DefaultRunnableSpec {
                   .map(_.ingredients)
 
               } yield assert(ingredients)(hasSameElements(expectedResult)))
-                .provideSomeLayer[Console with Clock](fridge.live(ref))
+                .provideSomeLayer[Clock](fridge.live(ref))
           )
       },
       testM("handle requests should fail with wrong state") {
@@ -74,10 +74,12 @@ object IlFornoSpec extends DefaultRunnableSpec {
                 error <- p.await
               } yield
                 assert(fridgeState.state)(equalTo(State.Closed)) && assert(
-                  error
-                )(equalTo(WrongState(State.Opened, State.Closed))))
-                .provideSomeLayer[Console with Clock](fridge.live(ref))
+                  fridgeState.ingredients
+                )(equalTo(ingredients)) && assert(error)(
+                  equalTo(WrongState(State.Opened, State.Closed))
+                ))
+                .provideSomeLayer[Clock](fridge.live(ref))
           )
       }
-    ).provideSomeLayer[Console](Clock.live)
+    ).provideLayer(Clock.live)
 }

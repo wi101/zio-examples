@@ -23,7 +23,7 @@ object fridge {
   trait Service {
     protected def currentState: Ref[FridgeWithState]
     def open: IO[WrongState, Map[Ingredient, Int]]
-    def close: URIO[Console, Unit]
+    def close: UIO[Unit]
     def set(newIngredients: Map[Ingredient, Int]): IO[WrongState, Unit]
     def fridgeState: UIO[FridgeWithState]
   }
@@ -42,10 +42,10 @@ object fridge {
           result <- currentState.updateAndGet(_.copy(state = State.Opened))
         } yield result.ingredients
 
-      override def close: URIO[Console, Unit] =
+      override def close: UIO[Unit] =
         currentState
           .updateAndGet(_.copy(state = State.Closed))
-          .unit *> console.putStrLn("The fridge is closed.")
+          .unit *> UIO(println(("The fridge is closed.")))
 
       override def set(
         newIngredients: Map[Ingredient, Int]
