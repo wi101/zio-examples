@@ -4,7 +4,6 @@ import com.zio.examples.ilforno.fridge._
 import zio.clock.Clock
 import zio.duration._
 import zio._
-import zio.console.Console
 
 sealed trait Ingredient extends Serializable with Product
 object Ingredient {
