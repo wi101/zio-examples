@@ -46,20 +46,21 @@ class System(requests: Queue[Request]) {
   def sendRequest(request: Request): UIO[Unit] = requests.offer(request).unit
 
   def handleRequests[R](
+    successAction: String => URIO[R, Unit],
     fallbackAction: (Error, String) => URIO[R, Unit]
   ): URIO[R with Clock with Fridge, Unit] =
     (for {
       request <- requests.take
       fridge <- ZIO.service[fridge.Service]
-      resource = ZManaged.make(fridge.open)(_ => fridge.close)
-      _ <- resource
-        .use { oldState =>
+      _ <- fridge.open
+        .flatMap { oldState =>
           System
             .preparePizza(request, oldState)
             .flatMap(newState => fridge.set(newState))
         }
-        .catchAll(e => fallbackAction(e, request.name))
         .ensuring(fridge.close)
+        .flatMap(_ => successAction(request.name))
+        .catchAll(e => fallbackAction(e, request.name))
     } yield ())
       .repeat(Schedule.spaced(15.seconds) && Schedule.duration(8.hours))
       .unit
