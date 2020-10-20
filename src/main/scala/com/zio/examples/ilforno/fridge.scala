@@ -10,7 +10,7 @@ object fridge {
   sealed trait Error
   object Error {
     case class UnavailableIngredient(ingredient: Ingredient) extends Error
-    case class WrongState(state: State, expected: State) extends Error
+    case class WrongState(state: State, expected: State)     extends Error
   }
 
   sealed trait State
@@ -33,40 +33,40 @@ object fridge {
     else IO.fail(WrongState(state, expected))
 
   def live(initialState: FridgeWithState): ZLayer[Console, Nothing, Fridge] =
-    ZLayer.fromServiceM(
-      console =>
-        Ref
-          .make(initialState)
-          .map(
-            state =>
-              new Service {
-                override def currentState: Ref[FridgeWithState] = state
-                override def open: IO[WrongState, Map[Ingredient, Int]] =
-                  for {
-                    fridgeWithState <- currentState.get
-                    _ <- checkState(fridgeWithState.state, State.Closed)
-                    result <- currentState
-                      .updateAndGet(_.copy(state = State.Opened))
-                  } yield result.ingredients
-
-                override def close: UIO[Unit] =
+    ZLayer.fromServiceM(console =>
+      Ref
+        .make(initialState)
+        .map(state =>
+          new Service {
+            override def currentState: Ref[FridgeWithState] = state
+            override def open: IO[WrongState, Map[Ingredient, Int]] =
+              for {
+                fridgeWithState <- currentState.get
+                _               <- checkState(fridgeWithState.state, State.Closed)
+                result <-
                   currentState
-                    .updateAndGet(_.copy(state = State.Closed))
-                    .unit *> console.putStrLn(("The fridge is closed."))
+                    .updateAndGet(_.copy(state = State.Opened))
+              } yield result.ingredients
 
-                override def set(
-                  newIngredients: Map[Ingredient, Int]
-                ): IO[WrongState, Unit] =
-                  for {
-                    fridgeWithState <- currentState.get
-                    _ <- checkState(fridgeWithState.state, State.Opened)
-                    _ <- currentState
-                      .updateAndGet(_.copy(ingredients = newIngredients))
-                  } yield ()
+            override def close: UIO[Unit] =
+              currentState
+                .updateAndGet(_.copy(state = State.Closed))
+                .unit *> console.putStrLn(("The fridge is closed."))
 
-                override def fridgeState: UIO[FridgeWithState] =
-                  currentState.get
-            }
+            override def set(
+                newIngredients: Map[Ingredient, Int]
+            ): IO[WrongState, Unit] =
+              for {
+                fridgeWithState <- currentState.get
+                _               <- checkState(fridgeWithState.state, State.Opened)
+                _ <-
+                  currentState
+                    .updateAndGet(_.copy(ingredients = newIngredients))
+              } yield ()
+
+            override def fridgeState: UIO[FridgeWithState] =
+              currentState.get
+          }
         )
     )
 

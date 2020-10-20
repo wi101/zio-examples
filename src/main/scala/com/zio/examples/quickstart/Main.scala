@@ -10,14 +10,15 @@ object Main extends zio.App {
   def run(args: List[String]): ZIO[ZEnv, Nothing, ExitCode] = {
 
     val io = for {
-      _ <- console.putStrLn("Hello, how many chocolate would you like to eat?!")
+      _         <- console.putStrLn("Hello, how many chocolate would you like to eat?!")
       numberStr <- console.getStrLn
-      _ <- console.putStrLn(s"Evaluating the number >>> $numberStr")
-      number <- parseInt(numberStr)
+      _         <- console.putStrLn(s"Evaluating the number >>> $numberStr")
+      number    <- parseInt(numberStr)
       chocolate <- Chocolate(number)
-      _ <- chocolate.eat
-        .repeat(Schedule.spaced(1.second) && Schedule.recurs(9))
-        .option
+      _ <-
+        chocolate.eat
+          .repeat(Schedule.spaced(1.second) && Schedule.recurs(9))
+          .option
     } yield number
 
     io.retry(Schedule.recurs(2))

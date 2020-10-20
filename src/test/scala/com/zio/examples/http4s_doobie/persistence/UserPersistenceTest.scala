@@ -14,18 +14,16 @@ object UserPersistenceTest extends DefaultRunnableSpec {
       testM("create a user then get it ") {
         for {
           created <- createUser(User(14, "usr"))
-          user <- getUser(14)
-        } yield
-          assert(created)(equalTo(User(14, "usr"))) &&
-            assert(user)(equalTo(User(14, "usr")))
+          user    <- getUser(14)
+        } yield assert(created)(equalTo(User(14, "usr"))) &&
+          assert(user)(equalTo(User(14, "usr")))
       },
       testM("delete user") {
         for {
-          deleted <- deleteUser(14).either
+          deleted  <- deleteUser(14).either
           notFound <- getUser(14).either
-        } yield
-          assert(deleted)(isRight(isTrue)) &&
-            assert(notFound)(isLeft(anything))
+        } yield assert(deleted)(isRight(isTrue)) &&
+          assert(notFound)(isLeft(anything))
       }
     ).provideSomeLayer[TestEnvironment](Test.layer)
 }
