@@ -12,7 +12,7 @@ package object configuration {
   case class DbConfig(url: String, user: String, password: String)
 
   val apiConfig: URIO[Has[ApiConfig], ApiConfig] = ZIO.access(_.get)
-  val dbConfig:  URIO[Has[DbConfig],  DbConfig]  = ZIO.access(_.get)
+  val dbConfig: URIO[Has[DbConfig], DbConfig]    = ZIO.access(_.get)
 
   object Configuration {
     import pureconfig.generic.auto._

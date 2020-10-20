@@ -7,11 +7,11 @@ import zio._
 
 sealed trait Ingredient extends Serializable with Product
 object Ingredient {
-  final case object Tuna extends Ingredient
-  final case object Tomato extends Ingredient
-  final case object Cheese extends Ingredient
-  final case object Onion extends Ingredient
-  final case object Chili extends Ingredient
+  final case object Tuna     extends Ingredient
+  final case object Tomato   extends Ingredient
+  final case object Cheese   extends Ingredient
+  final case object Onion    extends Ingredient
+  final case object Chili    extends Ingredient
   final case object Mushroom extends Ingredient
 }
 
@@ -46,21 +46,22 @@ class System(requests: Queue[Request]) {
   def sendRequest(request: Request): UIO[Unit] = requests.offer(request).unit
 
   def handleRequests[R](
-    successAction: String => URIO[R, Unit],
-    fallbackAction: (Error, String) => URIO[R, Unit]
+      successAction: String => URIO[R, Unit],
+      fallbackAction: (Error, String) => URIO[R, Unit]
   ): URIO[R with Clock with Fridge, Unit] =
     (for {
       request <- requests.take
-      fridge <- ZIO.service[fridge.Service]
-      _ <- fridge.open
-        .flatMap { oldState =>
-          System
-            .preparePizza(request, oldState)
-            .flatMap(newState => fridge.set(newState))
-        }
-        .ensuring(fridge.close)
-        .flatMap(_ => successAction(request.name))
-        .catchAll(e => fallbackAction(e, request.name))
+      fridge  <- ZIO.service[fridge.Service]
+      _ <-
+        fridge.open
+          .flatMap { oldState =>
+            System
+              .preparePizza(request, oldState)
+              .flatMap(newState => fridge.set(newState))
+          }
+          .ensuring(fridge.close)
+          .flatMap(_ => successAction(request.name))
+          .catchAll(e => fallbackAction(e, request.name))
     } yield ())
       .repeat(Schedule.spaced(15.seconds) && Schedule.duration(8.hours))
       .unit
@@ -73,8 +74,8 @@ object System {
     Queue.bounded[Request](12).map(new System(_))
 
   def preparePizza(
-    request: Request,
-    ingredients: Map[Ingredient, Int]
+      request: Request,
+      ingredients: Map[Ingredient, Int]
   ): IO[Error, Map[Ingredient, Int]] =
     request.pizza.ingredients
       .foldLeft[IO[Error, Map[Ingredient, Int]]](UIO(ingredients)) {

@@ -14,15 +14,14 @@ object UserPersistenceSpec extends DefaultRunnableSpec {
     suite("Persistence integration test")(testM("Persistense Live") {
       for {
         notFound <- getUser(100).either
-        created <- createUser(User(14, "usr")).either
-        deleted <- deleteUser(14).either
-      } yield
-        assert(notFound)(isLeft(anything)) &&
-          assert(created)(isRight(equalTo(User(14, "usr")))) &&
-          assert(deleted)(isRight(isTrue))
+        created  <- createUser(User(14, "usr")).either
+        deleted  <- deleteUser(14).either
+      } yield assert(notFound)(isLeft(anything)) &&
+        assert(created)(isRight(equalTo(User(14, "usr")))) &&
+        assert(deleted)(isRight(isTrue))
     }).provideSomeLayer[TestEnvironment](
-      (dbConfig ++ Blocking.live) >>> UserPersistenceService
-        .live
-        .mapError(_ => TestFailure.Runtime(Cause.die(new Exception("die")))))
+      (dbConfig ++ Blocking.live) >>> UserPersistenceService.live
+        .mapError(_ => TestFailure.Runtime(Cause.die(new Exception("die"))))
+    )
 
 }

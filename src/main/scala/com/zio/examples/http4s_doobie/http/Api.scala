@@ -15,7 +15,8 @@ final case class Api[R <: UserPersistence](rootUri: String) {
   type UserTask[A] = RIO[R, A]
 
   implicit def circeJsonDecoder[A](implicit decoder: Decoder[A]): EntityDecoder[UserTask, A] = jsonOf[UserTask, A]
-  implicit def circeJsonEncoder[A](implicit decoder: Encoder[A]): EntityEncoder[UserTask, A] = jsonEncoderOf[UserTask, A]
+  implicit def circeJsonEncoder[A](implicit decoder: Encoder[A]): EntityEncoder[UserTask, A] =
+    jsonEncoderOf[UserTask, A]
 
   val dsl: Http4sDsl[UserTask] = Http4sDsl[UserTask]
   import dsl._

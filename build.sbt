@@ -1,6 +1,6 @@
 name := "zio-examples"
 version := "0.1"
-scalaVersion := "2.12.10"
+scalaVersion := "2.13.3"
 
 val Http4sVersion     = "0.21.8"
 val CirceVersion      = "0.13.0"
@@ -28,7 +28,8 @@ libraryDependencies ++= Seq(
   //pure config
   "com.github.pureconfig" %% "pureconfig" % PureConfigVersion,
   // log4j
-  "org.slf4j" % "slf4j-log4j12" % "1.7.26"
+  "org.slf4j" % "slf4j-log4j12" % "1.7.30"
 )
 
 testFrameworks := Seq(new TestFramework("zio.test.sbt.ZTestFramework"))
+scalafmtOnCompile := true

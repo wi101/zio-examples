@@ -2,10 +2,7 @@ package com.zio.examples.http4s_doobie
 
 import cats.effect.{ExitCode => CatsExitCode}
 import com.zio.examples.http4s_doobie.configuration.{ApiConfig, Configuration}
-import com.zio.examples.http4s_doobie.persistence.{
-  UserPersistence,
-  UserPersistenceService
-}
+import com.zio.examples.http4s_doobie.persistence.{UserPersistence, UserPersistenceService}
 import com.zio.examples.http4s_doobie.http.Api
 import org.http4s.implicits._
 import org.http4s.server.Router
