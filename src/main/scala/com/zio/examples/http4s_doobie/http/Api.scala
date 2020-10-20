@@ -2,8 +2,8 @@ package com.zio.examples.http4s_doobie
 package http
 
 import persistence._
-import io.circe.{Decoder, Encoder}
-import org.http4s.{EntityDecoder, EntityEncoder, HttpRoutes}
+import io.circe.{ Decoder, Encoder }
+import org.http4s.{ EntityDecoder, EntityEncoder, HttpRoutes }
 import org.http4s.dsl.Http4sDsl
 import zio._
 import org.http4s.circe._

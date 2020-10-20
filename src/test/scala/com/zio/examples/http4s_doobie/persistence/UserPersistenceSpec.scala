@@ -5,7 +5,7 @@ import zio.blocking.Blocking
 import zio.test.Assertion._
 import zio.test._
 import zio.test.environment.TestEnvironment
-import zio.{Cause, ZLayer}
+import zio.{ Cause, ZLayer }
 
 object UserPersistenceSpec extends DefaultRunnableSpec {
   val dbConfig = ZLayer.succeed(DbConfig("jdbc:h2:~/test", "", ""))

@@ -1,6 +1,6 @@
 package com.zio.examples.http4s_doobie
 
-import zio.{Has, RIO, Task}
+import zio.{ Has, RIO, Task }
 
 package object persistence {
 

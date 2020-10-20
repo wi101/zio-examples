@@ -5,7 +5,7 @@ import cats.effect.Blocker
 import com.zio.examples.http4s_doobie.configuration.DbConfig
 import doobie.h2.H2Transactor
 import doobie.implicits._
-import doobie.{Query0, Transactor, Update0}
+import doobie.{ Query0, Transactor, Update0 }
 import scala.concurrent.ExecutionContext
 import zio._
 import zio.blocking.Blocking

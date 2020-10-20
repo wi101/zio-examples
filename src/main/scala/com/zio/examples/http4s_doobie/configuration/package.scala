@@ -1,6 +1,6 @@
 package com.zio.examples.http4s_doobie
 
-import pureconfig.{ConfigSource, loadConfigOrThrow}
+import pureconfig.{ ConfigSource, loadConfigOrThrow }
 import zio._
 
 package object configuration {

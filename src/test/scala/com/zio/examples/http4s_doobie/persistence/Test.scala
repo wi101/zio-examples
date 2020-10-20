@@ -1,6 +1,6 @@
 package com.zio.examples.http4s_doobie.persistence
-import com.zio.examples.http4s_doobie.{User, UserNotFound}
-import zio.{Ref, Task, ZLayer}
+import com.zio.examples.http4s_doobie.{ User, UserNotFound }
+import zio.{ Ref, Task, ZLayer }
 
 case class Test(users: Ref[Vector[User]]) extends Persistence.Service[User] {
   def get(id: Int): Task[User] =
