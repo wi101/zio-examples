@@ -38,6 +38,7 @@ scalacOptions ++= Seq(
   "-Xlint"
 )
 
+// scalafix; run with `scalafixEnable` followed by `scalafixAll`
 ThisBuild / scalafixDependencies += "com.github.liancheng" %% "organize-imports" % "0.4.3"
 
 testFrameworks := Seq(new TestFramework("zio.test.sbt.ZTestFramework"))
