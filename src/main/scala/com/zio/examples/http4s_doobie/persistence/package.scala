@@ -1,5 +1,6 @@
 package com.zio.examples.http4s_doobie
 
+import doobie.util.transactor.Transactor
 import zio.{ Has, RIO, Task }
 
 package object persistence {
@@ -12,6 +13,7 @@ package object persistence {
     }
   }
 
+  type DBTransactor    = Has[Transactor[Task]]
   type UserPersistence = Has[Persistence.Service[User]]
 
   def getUser(id: Int): RIO[UserPersistence, User]       = RIO.accessM(_.get.get(id))
