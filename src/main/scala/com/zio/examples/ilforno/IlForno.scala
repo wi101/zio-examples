@@ -63,7 +63,7 @@ class System(requests: Queue[Request]) {
           .flatMap(_ => successAction(request.name))
           .catchAll(e => fallbackAction(e, request.name))
     } yield ())
-      .repeat(Schedule.spaced(15.seconds) /* && Schedule.duration(8.hours) */ )
+      .repeat(Schedule.spaced(15.seconds) && Schedule.elapsed.whileOutput(_ < 8.hours))
       .unit
 
 }
