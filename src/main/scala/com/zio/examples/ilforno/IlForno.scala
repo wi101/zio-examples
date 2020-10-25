@@ -1,9 +1,9 @@
 package com.zio.examples.ilforno
 
 import com.zio.examples.ilforno.fridge._
+import zio._
 import zio.clock.Clock
 import zio.duration._
-import zio._
 
 sealed trait Ingredient extends Serializable with Product
 object Ingredient {
@@ -63,7 +63,7 @@ class System(requests: Queue[Request]) {
           .flatMap(_ => successAction(request.name))
           .catchAll(e => fallbackAction(e, request.name))
     } yield ())
-      .repeat(Schedule.spaced(15.seconds) && Schedule.duration(8.hours))
+      .repeat(Schedule.spaced(15.seconds) /* && Schedule.duration(8.hours) */ )
       .unit
 
 }

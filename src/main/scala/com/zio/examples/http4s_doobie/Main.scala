@@ -1,9 +1,9 @@
 package com.zio.examples.http4s_doobie
 
 import cats.effect.{ ExitCode => CatsExitCode }
-import com.zio.examples.http4s_doobie.configuration.{ ApiConfig, Configuration }
-import com.zio.examples.http4s_doobie.persistence.{ UserPersistence, UserPersistenceService }
+import com.zio.examples.http4s_doobie.configuration.Configuration
 import com.zio.examples.http4s_doobie.http.Api
+import com.zio.examples.http4s_doobie.persistence.{ DBTransactor, UserPersistence, UserPersistenceService }
 import org.http4s.implicits._
 import org.http4s.server.Router
 import org.http4s.server.blaze.BlazeServerBuilder
@@ -16,15 +16,17 @@ import zio.interop.catz._
 
 object Main extends App {
 
-  type AppEnvironment = Configuration with Clock with UserPersistence
+  type AppEnvironment = Configuration with Clock with DBTransactor with UserPersistence
 
   type AppTask[A] = RIO[AppEnvironment, A]
 
-  val userPersistence = (Configuration.live ++ Blocking.live) >>> UserPersistenceService.live
+  val appEnvironment =
+    Configuration.live >+> Blocking.live >+> UserPersistenceService.transactorLive >+> UserPersistenceService.live
 
   override def run(args: List[String]): ZIO[ZEnv, Nothing, ExitCode] = {
     val program: ZIO[AppEnvironment, Throwable, Unit] =
       for {
+        _   <- UserPersistenceService.createUserTable
         api <- configuration.apiConfig
         httpApp = Router[AppTask](
           "/users" -> Api(s"${api.endpoint}/users").route
@@ -41,7 +43,7 @@ object Main extends App {
       } yield server
 
     program
-      .provideSomeLayer[ZEnv](Configuration.live ++ userPersistence)
+      .provideSomeLayer[ZEnv](appEnvironment)
       .tapError(err => putStrLn(s"Execution failed with: $err"))
       .exitCode
   }

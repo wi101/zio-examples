@@ -1,12 +1,13 @@
 package com.zio.examples.http4s_doobie
 package persistence
 
+import scala.concurrent.ExecutionContext
+
 import cats.effect.Blocker
 import com.zio.examples.http4s_doobie.configuration.DbConfig
 import doobie.h2.H2Transactor
 import doobie.implicits._
 import doobie.{ Query0, Transactor, Update0 }
-import scala.concurrent.ExecutionContext
 import zio._
 import zio.blocking.Blocking
 import zio.interop.catz._
@@ -54,13 +55,29 @@ object UserPersistenceService {
 
     def delete(id: Int): Update0 =
       sql"""DELETE FROM USERS WHERE id = $id""".update
+
+    def createUsersTable: doobie.Update0 =
+      sql"""
+        CREATE TABLE USERS (
+          id   Int,
+          name VARCHAR NOT NULL
+        )
+        """.update
   }
+
+  def createUserTable: ZIO[DBTransactor, Throwable, Unit] =
+    for {
+      tnx <- ZIO.service[Transactor[Task]]
+      _ <-
+        SQL.createUsersTable.run
+          .transact(tnx)
+    } yield ()
 
   def mkTransactor(
       conf: DbConfig,
       connectEC: ExecutionContext,
       transactEC: ExecutionContext
-  ): Managed[Throwable, UserPersistenceService] = {
+  ): Managed[Throwable, Transactor[Task]] = {
     import zio.interop.catz._
 
     H2Transactor
@@ -72,15 +89,17 @@ object UserPersistenceService {
         Blocker.liftExecutionContext(transactEC)
       )
       .toManagedZIO
-      .map(new UserPersistenceService(_))
   }
 
-  val live: ZLayer[Has[DbConfig] with Blocking, Throwable, UserPersistence] =
+  val transactorLive: ZLayer[Has[DbConfig] with Blocking, Throwable, DBTransactor] =
     ZLayer.fromManaged(for {
       config     <- configuration.dbConfig.toManaged_
       connectEC  <- ZIO.descriptor.map(_.executor.asEC).toManaged_
       blockingEC <- blocking.blocking { ZIO.descriptor.map(_.executor.asEC) }.toManaged_
-      managed    <- mkTransactor(config, connectEC, blockingEC)
-    } yield managed)
+      transactor <- mkTransactor(config, connectEC, blockingEC)
+    } yield transactor)
+
+  val live: ZLayer[DBTransactor, Throwable, UserPersistence] =
+    ZLayer.fromService(new UserPersistenceService(_))
 
 }

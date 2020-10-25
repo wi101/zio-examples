@@ -1,14 +1,15 @@
 package com.zio.examples.http4s_doobie
 package http
 
-import persistence._
-import io.circe.{ Decoder, Encoder }
-import org.http4s.{ EntityDecoder, EntityEncoder, HttpRoutes }
-import org.http4s.dsl.Http4sDsl
-import zio._
-import org.http4s.circe._
-import zio.interop.catz._
 import io.circe.generic.auto._
+import io.circe.{ Decoder, Encoder }
+import org.http4s.circe._
+import org.http4s.dsl.Http4sDsl
+import org.http4s.{ EntityDecoder, EntityEncoder, HttpRoutes }
+import zio._
+import zio.interop.catz._
+
+import persistence._
 
 final case class Api[R <: UserPersistence](rootUri: String) {
 
