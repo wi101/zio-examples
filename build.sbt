@@ -31,6 +31,13 @@ libraryDependencies ++= Seq(
   "org.slf4j"             % "slf4j-log4j12"    % "1.7.30"
 )
 
+scalacOptions ++= Seq(
+  "-deprecation",
+  "-unchecked",
+  "-feature",
+  "-Xlint"
+)
+
 ThisBuild / scalafixDependencies += "com.github.liancheng" %% "organize-imports" % "0.4.3"
 
 testFrameworks := Seq(new TestFramework("zio.test.sbt.ZTestFramework"))

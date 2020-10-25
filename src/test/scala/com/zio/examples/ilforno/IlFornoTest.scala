@@ -3,12 +3,11 @@ package com.zio.examples.ilforno
 import com.zio.examples.ilforno.Ingredient.{ Cheese, Tomato, Tuna }
 import com.zio.examples.ilforno.fridge.Error.UnavailableIngredient
 import com.zio.examples.ilforno.fridge._
-import zio.{ Promise, UIO, ZIO }
-import zio.test.DefaultRunnableSpec
+import zio.duration._
+import zio.test.Assertion._
 import zio.test._
 import zio.test.environment.{ TestClock, TestConsole, TestEnvironment }
-import zio.test.Assertion._
-import zio.duration._
+import zio.{ Promise, UIO, ZIO }
 
 object IlFornoTest extends DefaultRunnableSpec {
   def spec =
