@@ -28,7 +28,7 @@ libraryDependencies ++= Seq(
   //pure config
   "com.github.pureconfig" %% "pureconfig" % PureConfigVersion,
   // log4j
-  "org.slf4j"             % "slf4j-log4j12"    % "1.7.30"
+  "org.slf4j" % "slf4j-log4j12" % "1.7.30"
 )
 
 scalacOptions ++= Seq(
@@ -37,6 +37,7 @@ scalacOptions ++= Seq(
   "-feature",
   "-Xlint"
 )
+scalafmtOnCompile := true
 
 // scalafix; run with `scalafixEnable` followed by `scalafixAll`
 ThisBuild / scalafixDependencies += "com.github.liancheng" %% "organize-imports" % "0.4.3"
