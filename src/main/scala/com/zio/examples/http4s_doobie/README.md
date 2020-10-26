@@ -35,7 +35,7 @@ This program requires these dependencies:
 import zio._
 
 object Main extends zio.App {
- def run(args: List[String]): ZIO[ZEnv, Nothing, Int] = ???
+ def run(args: List[String]): ZIO[ZEnv, Nothing, ExitCode] = ???
 }
 ```
 
