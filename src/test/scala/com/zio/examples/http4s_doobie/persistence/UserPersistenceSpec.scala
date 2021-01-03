@@ -1,12 +1,11 @@
 package com.zio.examples.http4s_doobie
 package persistence
-import com.zio.examples.http4s_doobie.configuration.{ Configuration, DbConfig }
-import doobie.util.transactor.Strategy.before
+import com.zio.examples.http4s_doobie.configuration.Configuration
+import zio.Cause
 import zio.blocking.Blocking
 import zio.test.Assertion._
 import zio.test._
 import zio.test.environment.TestEnvironment
-import zio.{ Cause, ZLayer }
 
 object UserPersistenceSpec extends DefaultRunnableSpec {
 
