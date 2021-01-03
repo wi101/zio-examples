@@ -11,12 +11,19 @@ Inspired by: Maxim Schuwalow in this project: [zio-todo-backend](https://github.
 
 Credit: [@jdegoes](https://github.com/jdegoes) and [@mschuwalow](https://github.com/mschuwalow)
 
-## Eat chocolate with ZIO
+## Quickstart
 in package: [quickstart](https://github.com/wi101/zio-examples/tree/master/src/main/scala/com/zio/examples/quickstart)
 
-This example is a quickstart on how could you repeat and retry actions using ZIO
+There are 2 examples: 
+
+1. Eat chocolate with ZIO Example: repeat and retry actions using ZIO Schedules.
 
 ![](https://emojipedia-us.s3.dualstack.us-west-1.amazonaws.com/thumbs/240/apple/237/chocolate-bar_1f36b.png)
+
+2. ZIOLayers Example: a program that interacts with a service called `Show` to display a given message. 
+   This ZIO program can use different implementations which are defined using `ZLayer[R, E, A]`.
+
+Checkout this video for a detailed explanation [Link](https://youtu.be/u5IrfkAo6nk)
 
 ## Prepare pizza and open the fridge using ZIO
 in package: [ilforno](https://github.com/wi101/zio-examples/tree/master/src/main/scala/com/zio/examples/ilforno)
