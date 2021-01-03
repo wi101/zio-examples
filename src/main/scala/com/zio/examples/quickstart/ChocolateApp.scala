@@ -3,7 +3,7 @@ package com.zio.examples.quickstart
 import zio._
 import zio.duration._
 
-object Main extends zio.App {
+object ChocolateApp extends zio.App {
 
   def parseInt(s: String): Task[Int] = Task(s.toInt)
 

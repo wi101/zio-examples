@@ -16,12 +16,11 @@ in package: [quickstart](https://github.com/wi101/zio-examples/tree/master/src/m
 
 There are 2 examples: 
 
-1. Eat chocolate with ZIO Example: repeat and retry actions using ZIO Schedules.
+1. <b>Eat chocolate with ZIO Example: </b> repeat and retry actions using ZIO Schedules.
 
 ![](https://emojipedia-us.s3.dualstack.us-west-1.amazonaws.com/thumbs/240/apple/237/chocolate-bar_1f36b.png)
 
-2. ZIOLayers Example: a program that interacts with a service called `Show` to display a given message. 
-   This ZIO program can use different implementations which are defined using `ZLayer[R, E, A]`.
+2. <b> ZIOLayers Example: </b> a program that interacts with a service called `Show` to display a given message. 
 
 Checkout this video for a detailed explanation [Link](https://youtu.be/u5IrfkAo6nk)
 
