@@ -11,10 +11,11 @@ val ZIOInterop        = "2.2.0.1"
 
 libraryDependencies ++= Seq(
   // ZIO
-  "dev.zio" %% "zio"              % ZIOVersion,
-  "dev.zio" %% "zio-interop-cats" % ZIOInterop,
-  "dev.zio" %% "zio-test"         % ZIOVersion % "test",
-  "dev.zio" %% "zio-test-sbt"     % ZIOVersion % "test",
+  "dev.zio"          %% "zio"              % ZIOVersion,
+  "com.github.wi101" %% "embroidery"       % "0.1.1",
+  "dev.zio"          %% "zio-interop-cats" % ZIOInterop,
+  "dev.zio"          %% "zio-test"         % ZIOVersion % "test",
+  "dev.zio"          %% "zio-test-sbt"     % ZIOVersion % "test",
   // Http4s
   "org.http4s" %% "http4s-blaze-server" % Http4sVersion,
   "org.http4s" %% "http4s-circe"        % Http4sVersion,

@@ -7,9 +7,9 @@ package object configuration {
 
   type Configuration = Has[ApiConfig] with Has[DbConfig]
 
-  case class AppConfig(api: ApiConfig, dbConfig: DbConfig)
-  case class ApiConfig(endpoint: String, port: Int)
-  case class DbConfig(url: String, user: String, password: String)
+  final case class AppConfig(api: ApiConfig, dbConfig: DbConfig)
+  final case class ApiConfig(endpoint: String, port: Int)
+  final case class DbConfig(url: String, user: String, password: String)
 
   val apiConfig: URIO[Has[ApiConfig], ApiConfig] = ZIO.access(_.get)
   val dbConfig: URIO[Has[DbConfig], DbConfig]    = ZIO.access(_.get)
