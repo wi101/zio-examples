@@ -2,12 +2,12 @@ name := "zio-examples"
 version := "0.1"
 scalaVersion := "2.13.3"
 
-val Http4sVersion     = "0.21.8"
+val Http4sVersion     = "0.21.22"
 val CirceVersion      = "0.13.0"
-val DoobieVersion     = "0.9.2"
-val ZIOVersion        = "1.0.3"
-val PureConfigVersion = "0.14.0"
-val ZIOInterop        = "2.2.0.1"
+val DoobieVersion     = "0.12.1"
+val ZIOVersion        = "1.0.6"
+val PureConfigVersion = "0.15.0"
+val ZIOInterop        = "2.4.0.0"
 
 libraryDependencies ++= Seq(
   // ZIO
